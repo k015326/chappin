@@ -3,37 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ちゃっぴん</title>
+<title>ちゃっぴん AI版</title>
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-<h1>ちゃっぴん</h1>
+<h1>ちゃっぴん AI</h1>
 
-<select id="playerSelect"></select>
-<input id="newPlayer" placeholder="ニックネーム">
+<select id="player"></select>
+<input id="newPlayer" placeholder="名前">
 <button onclick="addPlayer()">追加</button>
 
 <hr>
 
 <input id="stand" type="number" placeholder="立ち位置">
 <input id="target" type="number" placeholder="通過位置">
-<input id="pins" placeholder="残りピン (例:13,360)">
+<input id="pins" type="tel" inputmode="numeric" placeholder="残りピン">
 
-<button onclick="addShot()">入力</button>
+<button onclick="addShot()">投球</button>
+<button onclick="resetGame()">新ゲーム</button>
 
-<pre id="result"></pre>
-
-<canvas id="heatmap" width="300" height="300"></canvas>
+<h2 id="result">3投で分析開始</h2>
 
 <script src="app.js"></script>
-
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js');
-}
-</script>
-
 </body>
 </html>

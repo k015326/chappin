@@ -1,168 +1,83 @@
-let db;
-let currentPlayer = null;
+let data = JSON.parse(localStorage.getItem("chappin") || "{}");
+let current = "";
 
-const request = indexedDB.open("ChappinDB", 1);
+function save(){ localStorage.setItem("chappin", JSON.stringify(data)); }
 
-request.onupgradeneeded = e => {
-  db = e.target.result;
-  db.createObjectStore("players", { keyPath: "name" });
-};
+function addPlayer(){
+  const name = newPlayer.value;
+  if(!name) return;
+  if(!data[name]) data[name] = {history:[], tendency:{in:0,out:0}};
+  save(); load();
+}
 
-request.onsuccess = e => {
-  db = e.target.result;
-  loadPlayers();
-};
-
-function addPlayer() {
-  const name = document.getElementById("newPlayer").value;
-  if (!name) return;
-
-  const tx = db.transaction("players", "readwrite");
-  tx.objectStore("players").put({
-    name,
-    shots: [],
-    model: { rightBias: 0, leftBias: 0 }
+function load(){
+  player.innerHTML="";
+  Object.keys(data).forEach(n=>{
+    const o=document.createElement("option");
+    o.textContent=n; player.appendChild(o);
   });
+  current = player.value;
+}
+player.onchange=()=>current=player.value;
 
-  loadPlayers();
+function addShot(){
+  if(!current) return;
+
+  const s=Number(stand.value);
+  const t=Number(target.value);
+  const p=pins.value;
+
+  const obj=data[current];
+  obj.history.push({s,t,p});
+
+  learn(obj,p);
+  const sug = analyze(obj);
+
+  result.innerText =
+`推奨
+立ち位置:${sug.s}
+通過:${sug.t}`;
+
+  save();
 }
 
-function loadPlayers() {
-  const select = document.getElementById("playerSelect");
-  select.innerHTML = "";
-
-  const tx = db.transaction("players", "readonly");
-  const req = tx.objectStore("players").getAll();
-
-  req.onsuccess = () => {
-    req.result.forEach(p => {
-      const opt = document.createElement("option");
-      opt.value = p.name;
-      opt.textContent = p.name;
-      select.appendChild(opt);
-    });
-
-    select.onchange = () => currentPlayer = select.value;
-    if (req.result.length) currentPlayer = req.result[0].name;
-  };
+function learn(obj,p){
+  if(p.includes("10")) obj.tendency.out++;
+  if(p.includes("4")) obj.tendency.in++;
 }
 
-function addShot() {
-  const stand = Number(document.getElementById("stand").value);
-  const target = Number(document.getElementById("target").value);
-  const pins = document.getElementById("pins").value;
+function analyze(obj){
+  const last = obj.history[obj.history.length-1];
+  let s=last.s, t=last.t;
+  const p=last.p;
 
-  const isStrike = !pins || pins === "0";
-
-  const tx = db.transaction("players", "readwrite");
-  const store = tx.objectStore("players");
-
-  const req = store.get(currentPlayer);
-
-  req.onsuccess = () => {
-    const player = req.result;
-
-    const shot = { stand, target, pins, isStrike };
-    player.shots.push(shot);
-
-    updateModel(player, shot);
-
-    store.put(player);
-
-    analyze(player);
-  };
-}
-
-// 学習
-function updateModel(player, shot) {
-  if (shot.pins.includes("10")) player.model.rightBias++;
-  if (shot.pins.includes("4")) player.model.leftBias++;
-}
-
-// ベイズ最適化
-function calculateBest(shots) {
-  const map = {};
-
-  shots.forEach(s => {
-    const key = `${s.stand}-${s.target}`;
-    if (!map[key]) map[key] = { a: 1, b: 1 };
-
-    if (s.isStrike) map[key].a++;
-    else map[key].b++;
-  });
-
-  let best = null, bestScore = 0;
-
-  for (let key in map) {
-    const { a, b } = map[key];
-    const score = a / (a + b);
-
-    if (score > bestScore) {
-      bestScore = score;
-      best = key;
-    }
+  // ===== 基本ロジック =====
+  if(p.includes("10")||p.includes("6")){
+    s-=3; t-=2;
+  }
+  else if(p.includes("4")||p.includes("7")){
+    s+=3; t+=2;
+  }
+  else if(p.includes("1")&&p.includes("10")){
+    s-=5;
+  }
+  else if(p.includes("2")&&p.includes("4")){
+    s+=5;
   }
 
-  return best;
+  // ===== AI補正 =====
+  const tend=obj.tendency;
+  if(tend.out>tend.in) s-=1;
+  if(tend.in>tend.out) s+=1;
+
+  return {s,t};
 }
 
-// AI提案
-function suggest(player, last) {
-  let s = last.stand;
-  let t = last.target;
-
-  const rb = Math.floor(player.model.rightBias / 5);
-  const lb = Math.floor(player.model.leftBias / 5);
-
-  if (last.pins.includes("10")) {
-    s -= 2 + rb;
-    t -= 1;
-  }
-
-  if (last.pins.includes("4")) {
-    s += 2 + lb;
-    t += 1;
-  }
-
-  return { stand: s, target: t };
+function resetGame(){
+  if(!current) return;
+  data[current].history=[];
+  save();
+  location.reload();
 }
 
-function analyze(player) {
-  const shots = player.shots;
-
-  if (shots.length < 3) {
-    document.getElementById("result").textContent = "※3投以上で分析開始";
-    return;
-  }
-
-  const best = calculateBest(shots);
-  const [stand, target] = best.split("-");
-  const last = shots[shots.length - 1];
-
-  const sug = suggest(player, last);
-
-  document.getElementById("result").textContent =
-`最適
-立ち位置:${stand}
-通過:${target}
-
-次の推奨
-立ち位置:${sug.stand}
-通過:${sug.target}`;
-
-  drawHeatmap(shots);
-}
-
-function drawHeatmap(shots) {
-  const canvas = document.getElementById("heatmap");
-  const ctx = canvas.getContext("2d");
-
-  ctx.clearRect(0,0,300,300);
-
-  shots.forEach(s => {
-    const x = s.stand * 5;
-    const y = s.target * 5;
-    ctx.fillStyle = s.isStrike ? "red" : "blue";
-    ctx.fillRect(x,y,8,8);
-  });
-}
+load();

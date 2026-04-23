@@ -1,8 +1,6 @@
 {
-  "name": "ちゃっぴん",
+  "name": "ちゃっぴんAI",
   "short_name": "ちゃっぴん",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2196f3"
+  "start_url": "./",
+  "display": "standalone"
 }
