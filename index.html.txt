@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ちゃっぴん</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<h1>ちゃっぴん</h1>
+
+<select id="playerSelect"></select>
+<input id="newPlayer" placeholder="ニックネーム">
+<button onclick="addPlayer()">追加</button>
+
+<hr>
+
+<input id="stand" type="number" placeholder="立ち位置">
+<input id="target" type="number" placeholder="通過位置">
+<input id="pins" placeholder="残りピン (例:13,360)">
+
+<button onclick="addShot()">入力</button>
+
+<pre id="result"></pre>
+
+<canvas id="heatmap" width="300" height="300"></canvas>
+
+<script src="app.js"></script>
+</body>
+</html>

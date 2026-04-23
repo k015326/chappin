@@ -1,0 +1,8 @@
+{
+  "name": "ちゃっぴん",
+  "short_name": "ちゃっぴん",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2196f3"
+}
