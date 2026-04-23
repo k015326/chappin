@@ -1,0 +1,34 @@
+body{
+  font-family:sans-serif;
+  padding:5px;
+  margin:0;
+}
+
+h2{
+  margin:5px 0;
+}
+
+.guide{
+  font-size:12px;
+  background:#eee;
+  padding:5px;
+  margin-bottom:5px;
+}
+
+input,select,button{
+  width:100%;
+  margin:3px 0;
+  padding:8px;
+  font-size:14px;
+}
+
+button{
+  background:#2196f3;
+  color:white;
+  border:none;
+}
+
+h3{
+  margin-top:5px;
+  color:blue;
+}

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ちゃっぴん AI</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h2>ちゃっぴん AI</h2>
+
+<div class="guide">
+0=ストライク / 10=10ピン / 13=1と3 / 3610=3・6・10
+</div>
+
+<select id="player"></select>
+<input id="newPlayer" placeholder="名前">
+<button onclick="addPlayer()">追加</button>
+
+<input id="stand" type="number" placeholder="立ち位置">
+<input id="target" type="number" placeholder="通過位置">
+<input id="pins" type="tel" inputmode="numeric" placeholder="残りピン">
+
+<button onclick="addShot()">投球</button>
+<button onclick="resetGame()">新</button>
+
+<h3 id="result">入力待ち</h3>
+
+<script src="app.js"></script>
+</body>
+</html>
